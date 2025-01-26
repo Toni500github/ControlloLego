@@ -1,21 +1,31 @@
 package org.toni.controllolego
 
+import android.Manifest
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import org.toni.controllolego.databinding.ActivityMainBinding
 
@@ -32,6 +42,10 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            requestBluetooth()
         }
 
         // gotta add the same thing on the images too for UX, because that's the important thing
@@ -70,15 +84,15 @@ class MainActivity : AppCompatActivity() {
 
         binding.redSlider.addOnChangeListener { _, value, _ ->
             binding.redColor.text = value.toInt().toString()
-            setViewColor()
+            setRgbViewColor()
         }
         binding.greenSlider.addOnChangeListener { _, value, _ ->
             binding.greenColor.text = value.toInt().toString()
-            setViewColor()
+            setRgbViewColor()
         }
         binding.blueSlider.addOnChangeListener { _, value, _ ->
             binding.blueColor.text = value.toInt().toString()
-            setViewColor()
+            setRgbViewColor()
         }
 
         binding.radioSelectColorMode.setOnCheckedChangeListener { _, checkedId ->
@@ -104,8 +118,9 @@ class MainActivity : AppCompatActivity() {
             view.parent.requestDisallowInterceptTouchEvent(true)
             false
         }
-        binding.brightnessSlideBar.setOnClickListener { view ->
+        binding.brightnessSlideBar.setOnTouchListener { view, _ ->
             view.parent.requestDisallowInterceptTouchEvent(true)
+            false
         }
 
         binding.colorPickerHex.addTextChangedListener(object : TextWatcher {
@@ -119,8 +134,8 @@ class MainActivity : AppCompatActivity() {
         } )
 
         binding.colorPickerView.setColorListener(ColorEnvelopeListener { envelope, fromUser ->
-            if (!binding.colorPickerHex.text.contentEquals("#${envelope.hexCode}") && fromUser)
-                binding.colorPickerHex.setText("#${envelope.hexCode}")
+            if (!binding.colorPickerHex.text.contentEquals("#"+envelope.hexCode.substring(2)) && fromUser)
+                binding.colorPickerHex.setText("#"+envelope.hexCode.substring(2))
 
             binding.customColorView.setBackgroundColor(envelope.color)
         })
@@ -128,7 +143,7 @@ class MainActivity : AppCompatActivity() {
         binding.colorPickerView.attachBrightnessSlider(binding.brightnessSlideBar)
     }
 
-    private fun setViewColor() {
+    private fun setRgbViewColor() {
         val red = binding.redColor.text.toString().toInt()
         val green = binding.greenColor.text.toString().toInt()
         val blue = binding.blueColor.text.toString().toInt()
@@ -174,5 +189,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isValidHex(color: String): Boolean =
-        color.matches("^#[0-9A-Fa-f]{8}$".toRegex())
+        color.matches("^#[0-9A-Fa-f]{6}$".toRegex())
+
+    // https://stackoverflow.com/a/69972855
+    fun requestBluetooth() {
+        // check android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            requestMultiplePermissions.launch(
+                arrayOf(
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                )
+            )
+        } else {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            requestEnableBluetooth.launch(enableBtIntent)
+        }
+    }
+
+    private val requestEnableBluetooth =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                // granted
+            } else {
+                // denied
+            }
+        }
+
+    private val requestMultiplePermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.forEach {
+                Log.d("MyTag", "${it.key} = ${it.value}")
+            }
+        }
 }
