@@ -12,15 +12,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/spacer"
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/connect_hc05"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:layout_margin="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/round_border"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="Connetti"
+        android:orientation="vertical"
+        android:padding="24dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/status_hc05"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="Connettersi al dispositivo HC-05.\nDovrà essere gia associato al telefono"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/connect_hc05" />
+
+    <!--
     <LinearLayout
         android:id="@+id/buttonLeft"
         android:layout_width="wrap_content"
@@ -63,7 +84,6 @@
         android:orientation="vertical"
         android:padding="24dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.508"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/spacer">
 
@@ -92,7 +112,7 @@
         android:padding="24dp"
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.875"
+        app:layout_constraintHorizontal_bias="0.9"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/spacer">
 
@@ -106,18 +126,64 @@
             android:src="@drawable/arrow_right" />
 
     </LinearLayout>
+-->
+    <LinearLayout
+        android:id="@+id/the_3_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/status_hc05">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/round_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonCenter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/round_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/round_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textToApply"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="50dp"
         android:gravity="center"
-        android:text="Clicca un bottone"
+        android:text="Clicca uno dei 3 bottoni"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonRight" />
+        app:layout_constraintTop_toBottomOf="@id/the_3_buttons" />
 
     <TextView
         android:id="@+id/textToApplyBt"
@@ -126,291 +192,345 @@
         android:layout_marginTop="10dp"
         android:gravity="center"
         android:textSize="15sp"
+        android:visibility="gone"
         android:text="in attesa..."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textToApply" />
 
-    <TextView
-        android:id="@+id/_text_select_color"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:gravity="center"
-        android:text="Selezione dei colori"
-        android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textToApplyBt" />
 
-    <RadioGroup
-        android:id="@+id/radio_select_color_mode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/_text_select_color" >
-
-        <RadioButton
-            android:id="@+id/radio_rgb_colors"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Semplice" />
-
-        <RadioButton
-            android:id="@+id/radio_hex_advanced_colors"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Avanzata" />
-
-    </RadioGroup>
-
-    <!-- ColorPickerView -->
     <LinearLayout
-        android:id="@+id/custom_color_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radio_select_color_mode" >
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/customColorCardView"
-            android:layout_width="200dp"
-            android:layout_height="124dp"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/customColorView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#000000" />
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <EditText
-            android:id="@+id/color_picker_hex"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Hex Color Code (#RRGGBB)"
-            android:layout_gravity="center"
-            android:gravity="center"/>
-
-        <!-- padding separator -->
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="20dp" />
-
-        <com.skydoves.colorpickerview.sliders.BrightnessSlideBar
-            android:id="@+id/brightnessSlideBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:borderColor_BrightnessSlider="@android:color/darker_gray"
-            app:borderSize_BrightnessSlider="5"
-            app:selector_BrightnessSlider="@drawable/colorpickerview_wheel" />
-
-        <!-- padding separator -->
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="20dp" />
-
-        <com.skydoves.colorpickerview.ColorPickerView
-            android:id="@+id/colorPickerView"
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            app:initialColor="@color/cardview_dark_background" />
-
-        <!-- padding separator -->
-        <!--
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="20dp" />
-
-        <com.skydoves.colorpickerview.sliders.AlphaSlideBar
-            android:id="@+id/alphaSlideBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:selector_AlphaSlideBar="@drawable/colorpickerview_wheel"
-            app:borderColor_AlphaSlideBar="@android:color/darker_gray"
-            app:borderSize_AlphaSlideBar="5"/>
-        -->
-        <!-- padding separator -->
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="60dp" />
-    </LinearLayout>
-
-    <!-- RGB Colors -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/rgb_color_select"
+        android:id="@+id/_useless_settings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/textToApplyBt"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radio_select_color_mode">
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/red_text"
-            style="@style/Widget.RGB_Seekbars.TextView"
+        <!-- Title with Arrow -->
+        <LinearLayout
+            android:id="@+id/collapseBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="R:"
-            android:textColor="@color/red"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@+id/red_slider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/red_slider" />
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_marginTop="5dp">
 
-        <TextView
-            android:id="@+id/green_text"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="G:"
-            android:textColor="@color/green"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@+id/green_slider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/green_slider" />
-
-        <TextView
-            android:id="@+id/blue_text"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="B:"
-            android:textColor="@color/blue"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@+id/blue_slider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/blue_slider" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/red_slider"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="16dp"
-            android:scaleX="1"
-            android:scaleY="1"
-            android:stepSize="1"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toEndOf="@+id/red_text"
-            app:layout_constraintTop_toBottomOf="@+id/color_cardView"
-            app:thumbColor="@color/red"
-            app:trackColor="@color/red" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/green_slider"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="16dp"
-            android:stepSize="1"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toEndOf="@+id/green_text"
-            app:layout_constraintTop_toBottomOf="@+id/red_slider"
-            app:thumbColor="@color/green"
-            app:trackColor="@color/green" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/blue_slider"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="16dp"
-            android:stepSize="1"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toEndOf="@+id/blue_text"
-            app:layout_constraintTop_toBottomOf="@+id/green_slider"
-            app:thumbColor="@color/blue"
-            app:trackColor="@color/blue" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/color_cardView"
-            android:layout_width="200dp"
-            android:layout_height="124dp"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:id="@+id/arrowIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/mini_arrow" />
 
             <TextView
-                android:id="@+id/color_view"
+                android:id="@+id/titleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Impostazioni inutili aggiuntive"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </LinearLayout>
+
+        <!-- Collapsible Content -->
+        <LinearLayout
+            android:id="@+id/collapseContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:paddingTop="8dp" >
+
+            <TextView
+                android:id="@+id/_text_select_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="Selezione dei colori"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/_useless_settings" />
+
+            <RadioGroup
+                android:id="@+id/radio_select_color_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/_text_select_color" >
+
+                <RadioButton
+                    android:id="@+id/radio_rgb_colors"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Semplice" />
+
+                <RadioButton
+                    android:id="@+id/radio_hex_advanced_colors"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Avanzata" />
+            </RadioGroup>
+
+            <!-- ColorPickerView -->
+            <LinearLayout
+                android:id="@+id/custom_color_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/radio_select_color_mode" >
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/customColorCardView"
+                    android:layout_width="200dp"
+                    android:layout_height="124dp"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/customColorView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#000000" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <EditText
+                    android:id="@+id/color_picker_hex"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Hex Color Code (#RRGGBB)"
+                    android:layout_gravity="center"
+                    android:gravity="center"/>
+
+                <!-- padding separator -->
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp" />
+
+                <com.skydoves.colorpickerview.sliders.BrightnessSlideBar
+                    android:id="@+id/brightnessSlideBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:borderColor_BrightnessSlider="@android:color/darker_gray"
+                    app:borderSize_BrightnessSlider="5"
+                    app:selector_BrightnessSlider="@drawable/colorpickerview_wheel" />
+
+                <!-- padding separator -->
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp" />
+
+                <com.skydoves.colorpickerview.ColorPickerView
+                    android:id="@+id/colorPickerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    app:initialColor="@color/cardview_dark_background" />
+
+                <!-- padding separator -->
+                <!--
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp" />
+
+                <com.skydoves.colorpickerview.sliders.AlphaSlideBar
+                    android:id="@+id/alphaSlideBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:selector_AlphaSlideBar="@drawable/colorpickerview_wheel"
+                    app:borderColor_AlphaSlideBar="@android:color/darker_gray"
+                    app:borderSize_AlphaSlideBar="5"/>
+                -->
+                <!-- padding separator -->
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp" />
+            </LinearLayout>
+
+            <!-- RGB Colors -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/rgb_color_select"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#000000" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/radio_select_color_mode">
 
-        </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:id="@+id/red_text"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="R:"
+                    android:textColor="@color/red"
+                    android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/red_slider"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/red_slider" />
 
-        <TextView
-            android:id="@+id/blue_color"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="0"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@+id/blue_slider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/blue_slider"
-            app:layout_constraintTop_toTopOf="@+id/blue_slider" />
+                <TextView
+                    android:id="@+id/green_text"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="G:"
+                    android:textColor="@color/green"
+                    android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/green_slider"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/green_slider" />
 
-        <TextView
-            android:id="@+id/green_color"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="0"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@+id/green_slider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/green_slider"
-            app:layout_constraintTop_toTopOf="@+id/green_slider" />
+                <TextView
+                    android:id="@+id/blue_text"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="B:"
+                    android:textColor="@color/blue"
+                    android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/blue_slider"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/blue_slider" />
 
-        <TextView
-            android:id="@+id/red_color"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="0"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@+id/red_slider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/red_slider"
-            app:layout_constraintTop_toTopOf="@+id/red_slider" />
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/red_slider"
+                    android:layout_width="300dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="16dp"
+                    android:scaleX="1"
+                    android:scaleY="1"
+                    android:stepSize="1"
+                    android:valueFrom="0"
+                    android:valueTo="255"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.3"
+                    app:layout_constraintStart_toEndOf="@+id/red_text"
+                    app:layout_constraintTop_toBottomOf="@+id/color_cardView"
+                    app:thumbColor="@color/red"
+                    app:trackColor="@color/red" />
 
-        <TextView
-            android:id="@+id/hex_code"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="\#000000"
-            android:textSize="24sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/blue_slider" />
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/green_slider"
+                    android:layout_width="300dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="16dp"
+                    android:stepSize="1"
+                    android:valueFrom="0"
+                    android:valueTo="255"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.3"
+                    app:layout_constraintStart_toEndOf="@+id/green_text"
+                    app:layout_constraintTop_toBottomOf="@+id/red_slider"
+                    app:thumbColor="@color/green"
+                    app:trackColor="@color/green" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/blue_slider"
+                    android:layout_width="300dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="16dp"
+                    android:stepSize="1"
+                    android:valueFrom="0"
+                    android:valueTo="255"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.3"
+                    app:layout_constraintStart_toEndOf="@+id/blue_text"
+                    app:layout_constraintTop_toBottomOf="@+id/green_slider"
+                    app:thumbColor="@color/blue"
+                    app:trackColor="@color/blue" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/color_cardView"
+                    android:layout_width="200dp"
+                    android:layout_height="124dp"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/color_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#000000" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/blue_color"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="0"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/blue_slider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/blue_slider"
+                    app:layout_constraintTop_toTopOf="@+id/blue_slider" />
+
+                <TextView
+                    android:id="@+id/green_color"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="0"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/green_slider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/green_slider"
+                    app:layout_constraintTop_toTopOf="@+id/green_slider" />
+
+                <TextView
+                    android:id="@+id/red_color"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="0"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/red_slider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/red_slider"
+                    app:layout_constraintTop_toTopOf="@+id/red_slider" />
+
+                <TextView
+                    android:id="@+id/hex_code"
+                    style="@style/Widget.RGB_Seekbars.TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="\#000000"
+                    android:textSize="24sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/blue_slider" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

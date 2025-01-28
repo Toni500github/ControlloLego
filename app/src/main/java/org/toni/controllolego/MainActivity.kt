@@ -16,21 +16,31 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.widget.LinearLayout
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationUtils
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.Fragment
+import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothClassicService
+import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
+import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
+import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import org.toni.controllolego.databinding.ActivityMainBinding
 
+
+@SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var mService: BluetoothService
+    private var writer: BluetoothWriter? = null
+    private val BTAdapter = BluetoothAdapter.getDefaultAdapter()
 
     @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,43 +54,132 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestBluetooth()
         }
 
-        // gotta add the same thing on the images too for UX, because that's the important thing
-        binding.buttonLeft.setOnTouchListener { view, event -> startAnimation(view, event) }
-        binding.buttonLeft.setOnClickListener {
-            binding.textToApply.text = "Girando a sinistra di 90°"
-            binding.textToApplyBt.text = "P-090"
+        var alreadyConnected = false
+        binding.connectHc05.setOnTouchListener { view, event -> startAnimation(view, event) }
+        binding.connectHc05.setOnClickListener {
+            if (alreadyConnected) {
+                mService.disconnect()
+                writer = null
+                binding.connectHc05.text = "CONNETTI"
+                binding.statusHc05.text = "Dispositivo disconnesso"
+                alreadyConnected = false
+                return@setOnClickListener
+            }
+            if (BTAdapter == null) {
+                // Device does not support Bluetooth
+            } else if (!BTAdapter.isEnabled) {
+                val enableBT = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBT, 2)
+            }
+            val pairedDevices = BTAdapter.bondedDevices
+            if (pairedDevices.size > 0) {
+                for (device in pairedDevices) {
+                    Log.d("BluetoothTestingLmao", "device name = ${device?.name}")
+                    Log.d("BluetoothTestingLmao", "MAC address = ${device?.address}")
+                    if (device?.name.contentEquals("HC-05", true)) {
+                        binding.statusHc05.text = "Connettendomi al ${device?.name}..."
+                        val uuids = device.uuids
+                        if (uuids != null) {
+                            val config = BluetoothConfiguration()
+                            config.bluetoothServiceClass = BluetoothClassicService::class.java //  BluetoothClassicService.class or BluetoothLeService.class
+                            config.context = applicationContext
+                            config.bufferSize = 2048
+                            config.characterDelimiter = '\n'
+                            config.deviceName = "Controllo Lego"
+                            config.callListenersInMainThread = true
+                            config.uuid = uuids[1].uuid // When using BluetoothLeService.class set null to show all devices on scan.
+                            BluetoothService.init(config)
+                            mService = BluetoothService.getDefaultInstance()
+                            mService.connect(device)
+                            writer = BluetoothWriter(mService)
+                            binding.connectHc05.text = "DISCONNETTI"
+                            binding.statusHc05.text = "${device?.name} connesso con successo"
+                            alreadyConnected = true
+                        }
+                    }
+                }
+            }
         }
-        binding.buttonLeftImage.setOnTouchListener { _, event -> startAnimation(binding.buttonLeft, event) }
+
+        var redToggle = false
+        setBgColor(binding.buttonLeft, getColor(R.color.red))
+        binding.buttonLeft.setOnTouchListener { view, event -> startAnimation(view, event, true) }
+        binding.buttonLeft.setOnClickListener {
+            if (writer == null) {
+                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            redToggle = !redToggle
+            if (redToggle) {
+                binding.textToApply.text = "Attivando LED rosso" // "Girando a sinistra di 90°"
+                binding.textToApplyBt.text = "R255"
+                writer!!.write('R')
+            } else {
+                binding.textToApply.text = "Disattivando LED rosso" // "Ritornando a 0°"
+                binding.textToApplyBt.text = "R000"
+                writer!!.write('r')
+            }
+        }
+        // gotta add the same thing on the images too for UX, because that's the important thing
+        /*binding.buttonLeftImage.setOnTouchListener { _, event -> startAnimation(binding.buttonLeft, event) }
         binding.buttonLeftImage.setOnClickListener {
             binding.textToApply.text = "Girando a sinistra di 90°"
             binding.textToApplyBt.text = "P-090"
-        }
+        }*/
 
-        binding.buttonCenter.setOnTouchListener { view, event -> startAnimation(view, event) }
+        var greenToggle = false
+        setBgColor(binding.buttonCenter, getColor(R.color.green))
+        binding.buttonCenter.setOnTouchListener { view, event -> startAnimation(view, event, true) }
         binding.buttonCenter.setOnClickListener {
-            binding.textToApply.text = "Ritornando a 0°"
-            binding.textToApplyBt.text = "P000"
+            if (writer == null) {
+                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            greenToggle = !greenToggle
+            if (greenToggle) {
+                binding.textToApply.text = "Attivando LED verde" // "Ritornando a 0°"
+                writer!!.write('G')
+            } else {
+                binding.textToApply.text = "Disattivando LED verde" // "Ritornando a 0°"
+                writer!!.write('g')
+            }
         }
-        binding.buttonCenterImage.setOnTouchListener { _, event -> startAnimation(binding.buttonCenter, event) }
+        /*binding.buttonCenterImage.setOnTouchListener { _, event -> startAnimation(binding.buttonCenter, event) }
         binding.buttonCenterImage.setOnClickListener {
             binding.textToApply.text = "Ritornando a 0°"
             binding.textToApplyBt.text = "P000"
-        }
+        }*/
 
-        binding.buttonRight.setOnTouchListener { view, event -> startAnimation(view, event) }
+        var blueToggle = false
+        setBgColor(binding.buttonRight, getColor(R.color.blue))
+        binding.buttonRight.setOnTouchListener { view, event -> startAnimation(view, event, true) }
         binding.buttonRight.setOnClickListener {
-            binding.textToApply.text = "Girando a destra di 90°"
-            binding.textToApplyBt.text = "P090"
+            if (writer == null) {
+                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            blueToggle = !blueToggle
+            if (blueToggle) {
+                binding.textToApply.text = "Attivando LED blu" // "Girando a destra di 90°"
+                writer!!.write('B')
+            } else {
+                binding.textToApply.text = "Disattivando LED blu" // "Ritornando a 0°"
+                writer!!.write('b')
+            }
         }
-        binding.buttonRightImage.setOnTouchListener { _, event -> startAnimation(binding.buttonRight, event) }
+        /*binding.buttonRightImage.setOnTouchListener { _, event -> startAnimation(binding.buttonRight, event) }
         binding.buttonRightImage.setOnClickListener {
             binding.textToApply.text = "Girando a destra di 90°"
             binding.textToApplyBt.text = "P090"
-        }
+        }*/
 
         binding.redSlider.addOnChangeListener { _, value, _ ->
             binding.redColor.text = value.toInt().toString()
@@ -106,6 +205,22 @@ class MainActivity : AppCompatActivity() {
                     binding.customColorSelect.visibility = View.VISIBLE
                     setColorPickerView()
                 }
+            }
+        }
+
+        var isExpanded = false
+        binding.collapseBar.setOnClickListener {
+            isExpanded = !isExpanded
+            if (isExpanded) {
+                expandView(binding.collapseContent)
+                binding.arrowIcon.animate().rotation(180f).setInterpolator(
+                    AccelerateDecelerateInterpolator()
+                ).start()
+            } else {
+                collapseView(binding.collapseContent)
+                binding.arrowIcon.animate().rotation(0f).setInterpolator(
+                    AccelerateDecelerateInterpolator()
+                ).start()
             }
         }
     }
@@ -141,6 +256,11 @@ class MainActivity : AppCompatActivity() {
         })
 
         binding.colorPickerView.attachBrightnessSlider(binding.brightnessSlideBar)
+    }
+
+    private fun setBgColor(view: View, color: Int) {
+        val drawable = view.background as GradientDrawable
+        drawable.setColor(color)
     }
 
     private fun setRgbViewColor() {
@@ -188,11 +308,47 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
+    private fun expandView(view: View) {
+        view.measure(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        val targetedHeight = view.measuredHeight
+        view.layoutParams.height = 0
+        view.visibility = View.VISIBLE
+
+        val animator = ValueAnimator.ofInt(0, targetedHeight)
+        animator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            view.layoutParams.height = value
+            view.requestLayout()
+        }
+        animator.duration = 300
+        animator.interpolator = AccelerateDecelerateInterpolator()
+        animator.start()
+    }
+
+    private fun collapseView(view: View) {
+        val initialHeight = view.measuredHeight
+
+        val animator = ValueAnimator.ofInt(initialHeight, 0)
+        animator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            view.layoutParams.height = value
+            view.requestLayout()
+            if (value == 0)
+                view.visibility = View.GONE
+        }
+        animator.duration = 300
+        animator.interpolator = AccelerateDecelerateInterpolator()
+        animator.start()
+    }
+
     private fun isValidHex(color: String): Boolean =
         color.matches("^#[0-9A-Fa-f]{6}$".toRegex())
 
     // https://stackoverflow.com/a/69972855
-    fun requestBluetooth() {
+    private fun requestBluetooth() {
         // check android 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requestMultiplePermissions.launch(
