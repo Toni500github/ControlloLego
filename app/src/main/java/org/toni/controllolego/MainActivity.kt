@@ -30,6 +30,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothClassicService
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
+import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import org.toni.controllolego.databinding.ActivityMainBinding
@@ -95,14 +96,19 @@ class MainActivity : AppCompatActivity() {
                             config.characterDelimiter = '\n'
                             config.deviceName = "Controllo Lego"
                             config.callListenersInMainThread = true
-                            config.uuid = uuids[1].uuid // When using BluetoothLeService.class set null to show all devices on scan.
+                            config.uuid = uuids[1].uuid
                             BluetoothService.init(config)
                             mService = BluetoothService.getDefaultInstance()
                             mService.connect(device)
-                            writer = BluetoothWriter(mService)
-                            binding.connectHc05.text = "DISCONNETTI"
-                            binding.statusHc05.text = "${device?.name} connesso con successo"
-                            alreadyConnected = true
+                            while (mService.status == BluetoothStatus.CONNECTING) {  }
+                            if (mService.status == BluetoothStatus.CONNECTED) {
+                                writer = BluetoothWriter(mService)
+                                binding.connectHc05.text = "DISCONNETTI"
+                                binding.statusHc05.text = "${device?.name} connesso con successo"
+                                alreadyConnected = true
+                            } else {
+                                binding.statusHc05.text = "${device?.name} non è stato connesso"
+                            }
                         }
                     }
                 }
@@ -205,6 +211,18 @@ class MainActivity : AppCompatActivity() {
                     binding.customColorSelect.visibility = View.VISIBLE
                     setColorPickerView()
                 }
+            }
+        }
+
+        binding.sendText.setOnClickListener {
+            if (writer == null) {
+                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (binding.textToBluetooth.text.isNotEmpty()) {
+                writer!!.write('ì')
+                writer!!.write(binding.textToBluetooth.text.toString())
+                writer!!.write('\n')
             }
         }
 

@@ -198,6 +198,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textToApply" />
 
+    <EditText
+        android:id="@+id/text_to_bluetooth"
+        android:layout_width="370dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="50dp"
+        android:gravity="top"
+        android:hint="Inserire testo da mandare via bluetooth"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textToApplyBt" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/send_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="@drawable/round_border"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:text="Invia"
+        android:textColor="@color/text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_to_bluetooth" />
 
     <LinearLayout
         android:id="@+id/_useless_settings"
@@ -207,7 +233,7 @@
         android:padding="16dp"
         android:layout_marginTop="40dp"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/textToApplyBt"
+        app:layout_constraintTop_toBottomOf="@id/send_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
