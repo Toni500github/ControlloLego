@@ -275,130 +275,15 @@
             android:visibility="gone"
             android:paddingTop="8dp" >
 
-            <TextView
-                android:id="@+id/_text_select_color"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:gravity="center"
-                android:text="Selezione dei colori"
-                android:textSize="15sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/_useless_settings" />
-
-            <RadioGroup
-                android:id="@+id/radio_select_color_mode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/_text_select_color" >
-
-                <RadioButton
-                    android:id="@+id/radio_rgb_colors"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Semplice" />
-
-                <RadioButton
-                    android:id="@+id/radio_hex_advanced_colors"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Avanzata" />
-            </RadioGroup>
-
-            <!-- ColorPickerView -->
-            <LinearLayout
-                android:id="@+id/custom_color_select"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/radio_select_color_mode" >
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/customColorCardView"
-                    android:layout_width="200dp"
-                    android:layout_height="124dp"
-                    android:layout_marginTop="16dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <TextView
-                        android:id="@+id/customColorView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="#000000" />
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <EditText
-                    android:id="@+id/color_picker_hex"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Hex Color Code (#RRGGBB)"
-                    android:layout_gravity="center"
-                    android:gravity="center"/>
-
-                <!-- padding separator -->
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp" />
-
-                <com.skydoves.colorpickerview.sliders.BrightnessSlideBar
-                    android:id="@+id/brightnessSlideBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:borderColor_BrightnessSlider="@android:color/darker_gray"
-                    app:borderSize_BrightnessSlider="5"
-                    app:selector_BrightnessSlider="@drawable/colorpickerview_wheel" />
-
-                <!-- padding separator -->
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp" />
-
-                <com.skydoves.colorpickerview.ColorPickerView
-                    android:id="@+id/colorPickerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    app:initialColor="@color/cardview_dark_background" />
-
-                <!-- padding separator -->
-                <!--
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp" />
-
-                <com.skydoves.colorpickerview.sliders.AlphaSlideBar
-                    android:id="@+id/alphaSlideBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:selector_AlphaSlideBar="@drawable/colorpickerview_wheel"
-                    app:borderColor_AlphaSlideBar="@android:color/darker_gray"
-                    app:borderSize_AlphaSlideBar="5"/>
-                -->
-                <!-- padding separator -->
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="60dp" />
-            </LinearLayout>
-
             <!-- RGB Colors -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/rgb_color_select"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/radio_select_color_mode">
+                app:layout_constraintTop_toBottomOf="@id/_useless_settings">
 
                 <TextView
                     android:id="@+id/red_text"

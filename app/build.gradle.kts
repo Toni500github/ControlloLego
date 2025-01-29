@@ -41,7 +41,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.colorpickerview)
     implementation(libs.bluetoothclassiclibrary)
 
     implementation(libs.androidx.core.ktx)

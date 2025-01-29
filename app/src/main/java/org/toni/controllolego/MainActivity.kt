@@ -11,8 +11,6 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -24,7 +22,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothClassicService
@@ -32,7 +29,6 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import org.toni.controllolego.databinding.ActivityMainBinding
 
 
@@ -200,27 +196,12 @@ class MainActivity : AppCompatActivity() {
             setRgbViewColor()
         }
 
-        binding.radioSelectColorMode.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.radio_rgb_colors -> {
-                    binding.customColorSelect.visibility = View.GONE
-                    binding.rgbColorSelect.visibility = View.VISIBLE
-                }
-                R.id.radio_hex_advanced_colors -> {
-                    binding.rgbColorSelect.visibility = View.GONE
-                    binding.customColorSelect.visibility = View.VISIBLE
-                    setColorPickerView()
-                }
-            }
-        }
-
         binding.sendText.setOnClickListener {
             if (writer == null) {
                 Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (binding.textToBluetooth.text.isNotEmpty()) {
-                writer!!.write('ì')
                 writer!!.write(binding.textToBluetooth.text.toString())
                 writer!!.write('\n')
             }
@@ -241,39 +222,6 @@ class MainActivity : AppCompatActivity() {
                 ).start()
             }
         }
-    }
-
-    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
-    private fun setColorPickerView() {
-        // disable scroll when interacting with the color picker
-        binding.colorPickerView.setOnTouchListener { view, _ ->
-            // allow colorPickerView to handle the touch event
-            view.parent.requestDisallowInterceptTouchEvent(true)
-            false
-        }
-        binding.brightnessSlideBar.setOnTouchListener { view, _ ->
-            view.parent.requestDisallowInterceptTouchEvent(true)
-            false
-        }
-
-        binding.colorPickerHex.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {
-                val col = s.toString()
-                if (isValidHex(col))
-                    binding.colorPickerView.setInitialColor(col.toColorInt())
-            }
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-        } )
-
-        binding.colorPickerView.setColorListener(ColorEnvelopeListener { envelope, fromUser ->
-            if (!binding.colorPickerHex.text.contentEquals("#"+envelope.hexCode.substring(2)) && fromUser)
-                binding.colorPickerHex.setText("#"+envelope.hexCode.substring(2))
-
-            binding.customColorView.setBackgroundColor(envelope.color)
-        })
-
-        binding.colorPickerView.attachBrightnessSlider(binding.brightnessSlideBar)
     }
 
     private fun setBgColor(view: View, color: Int) {
