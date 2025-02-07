@@ -30,6 +30,7 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import org.toni.controllolego.databinding.ActivityMainBinding
+import java.util.Locale
 
 
 @SuppressLint("MissingPermission")
@@ -111,88 +112,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        var redToggle = false
-        setBgColor(binding.buttonLeft, getColor(R.color.red))
-        binding.buttonLeft.setOnTouchListener { view, event -> startAnimation(view, event, true) }
-        binding.buttonLeft.setOnClickListener {
-            if (writer == null) {
-                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            redToggle = !redToggle
-            if (redToggle) {
-                binding.textToApply.text = "Attivando LED rosso" // "Girando a sinistra di 90°"
-                binding.textToApplyBt.text = "R255"
-                writer!!.write('R')
-            } else {
-                binding.textToApply.text = "Disattivando LED rosso" // "Ritornando a 0°"
-                binding.textToApplyBt.text = "R000"
-                writer!!.write('r')
-            }
-        }
-        // gotta add the same thing on the images too for UX, because that's the important thing
-        /*binding.buttonLeftImage.setOnTouchListener { _, event -> startAnimation(binding.buttonLeft, event) }
-        binding.buttonLeftImage.setOnClickListener {
-            binding.textToApply.text = "Girando a sinistra di 90°"
-            binding.textToApplyBt.text = "P-090"
-        }*/
-
-        var greenToggle = false
-        setBgColor(binding.buttonCenter, getColor(R.color.green))
-        binding.buttonCenter.setOnTouchListener { view, event -> startAnimation(view, event, true) }
-        binding.buttonCenter.setOnClickListener {
-            if (writer == null) {
-                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            greenToggle = !greenToggle
-            if (greenToggle) {
-                binding.textToApply.text = "Attivando LED verde" // "Ritornando a 0°"
-                writer!!.write('G')
-            } else {
-                binding.textToApply.text = "Disattivando LED verde" // "Ritornando a 0°"
-                writer!!.write('g')
-            }
-        }
-        /*binding.buttonCenterImage.setOnTouchListener { _, event -> startAnimation(binding.buttonCenter, event) }
-        binding.buttonCenterImage.setOnClickListener {
-            binding.textToApply.text = "Ritornando a 0°"
-            binding.textToApplyBt.text = "P000"
-        }*/
-
-        var blueToggle = false
-        setBgColor(binding.buttonRight, getColor(R.color.blue))
-        binding.buttonRight.setOnTouchListener { view, event -> startAnimation(view, event, true) }
-        binding.buttonRight.setOnClickListener {
-            if (writer == null) {
-                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            blueToggle = !blueToggle
-            if (blueToggle) {
-                binding.textToApply.text = "Attivando LED blu" // "Girando a destra di 90°"
-                writer!!.write('B')
-            } else {
-                binding.textToApply.text = "Disattivando LED blu" // "Ritornando a 0°"
-                writer!!.write('b')
-            }
-        }
-        /*binding.buttonRightImage.setOnTouchListener { _, event -> startAnimation(binding.buttonRight, event) }
-        binding.buttonRightImage.setOnClickListener {
-            binding.textToApply.text = "Girando a destra di 90°"
-            binding.textToApplyBt.text = "P090"
-        }*/
-
         binding.redSlider.addOnChangeListener { _, value, _ ->
-            binding.redColor.text = value.toInt().toString()
+            if (writer == null)
+                return@addOnChangeListener
+
+            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
+            writer!!.write('R')
+            writer!!.write(str)
+            binding.redColor.text = str
             setRgbViewColor()
         }
         binding.greenSlider.addOnChangeListener { _, value, _ ->
-            binding.greenColor.text = value.toInt().toString()
+            if (writer == null)
+                return@addOnChangeListener
+
+            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
+            writer!!.write('G')
+            writer!!.write(str)
+            binding.greenColor.text = str
             setRgbViewColor()
         }
         binding.blueSlider.addOnChangeListener { _, value, _ ->
-            binding.blueColor.text = value.toInt().toString()
+            if (writer == null)
+                return@addOnChangeListener
+
+            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
+            writer!!.write('B')
+            writer!!.write(str)
+            binding.blueColor.text = str
             setRgbViewColor()
         }
 
@@ -203,30 +150,8 @@ class MainActivity : AppCompatActivity() {
             }
             if (binding.textToBluetooth.text.isNotEmpty()) {
                 writer!!.write(binding.textToBluetooth.text.toString())
-                writer!!.write('\n')
             }
         }
-
-        var isExpanded = false
-        binding.collapseBar.setOnClickListener {
-            isExpanded = !isExpanded
-            if (isExpanded) {
-                expandView(binding.collapseContent)
-                binding.arrowIcon.animate().rotation(180f).setInterpolator(
-                    AccelerateDecelerateInterpolator()
-                ).start()
-            } else {
-                collapseView(binding.collapseContent)
-                binding.arrowIcon.animate().rotation(0f).setInterpolator(
-                    AccelerateDecelerateInterpolator()
-                ).start()
-            }
-        }
-    }
-
-    private fun setBgColor(view: View, color: Int) {
-        val drawable = view.background as GradientDrawable
-        drawable.setColor(color)
     }
 
     private fun setRgbViewColor() {
@@ -273,45 +198,6 @@ class MainActivity : AppCompatActivity() {
         colorAnimator.start()
         return false
     }
-
-    private fun expandView(view: View) {
-        view.measure(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        val targetedHeight = view.measuredHeight
-        view.layoutParams.height = 0
-        view.visibility = View.VISIBLE
-
-        val animator = ValueAnimator.ofInt(0, targetedHeight)
-        animator.addUpdateListener { animation ->
-            val value = animation.animatedValue as Int
-            view.layoutParams.height = value
-            view.requestLayout()
-        }
-        animator.duration = 300
-        animator.interpolator = AccelerateDecelerateInterpolator()
-        animator.start()
-    }
-
-    private fun collapseView(view: View) {
-        val initialHeight = view.measuredHeight
-
-        val animator = ValueAnimator.ofInt(initialHeight, 0)
-        animator.addUpdateListener { animation ->
-            val value = animation.animatedValue as Int
-            view.layoutParams.height = value
-            view.requestLayout()
-            if (value == 0)
-                view.visibility = View.GONE
-        }
-        animator.duration = 300
-        animator.interpolator = AccelerateDecelerateInterpolator()
-        animator.start()
-    }
-
-    private fun isValidHex(color: String): Boolean =
-        color.matches("^#[0-9A-Fa-f]{6}$".toRegex())
 
     // https://stackoverflow.com/a/69972855
     private fun requestBluetooth() {
