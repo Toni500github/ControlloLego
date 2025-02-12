@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "org.toni.controllolego"
+    namespace = "org.toni.controllolego_prof"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.toni.controllolego"
+        applicationId = "org.toni.controllolego_prof"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
