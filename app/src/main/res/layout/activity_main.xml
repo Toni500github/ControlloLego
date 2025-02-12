@@ -41,169 +41,124 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/connect_hc05" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/rgb_color_select"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/the_3_buttons"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/status_hc05">
 
-        <TextView
-            android:id="@+id/red_text"
-            style="@style/Widget.RGB_Seekbars.TextView"
+        <LinearLayout
+            android:id="@+id/buttonLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="R:"
-            android:textColor="@color/red"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@+id/red_slider"
+            android:layout_margin="20dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/round_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.088"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/red_slider" />
+            app:layout_constraintTop_toBottomOf="@id/spacer" >
 
-        <TextView
-            android:id="@+id/green_text"
-            style="@style/Widget.RGB_Seekbars.TextView"
+            <ImageView
+                android:id="@+id/buttonLeftImage"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/buttonBg"
+                android:src="@drawable/arrow_left" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttonCenter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="G:"
-            android:textColor="@color/green"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@+id/green_slider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/green_slider" />
-
-        <TextView
-            android:id="@+id/blue_text"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="B:"
-            android:textColor="@color/blue"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@+id/blue_slider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/blue_slider" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/red_slider"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="16dp"
-            android:scaleX="1"
-            android:scaleY="1"
-            android:stepSize="1"
-            android:valueFrom="000"
-            android:valueTo="255"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toEndOf="@+id/red_text"
-            app:layout_constraintTop_toBottomOf="@+id/color_cardView"
-            app:thumbColor="@color/red"
-            app:trackColor="@color/red" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/green_slider"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="16dp"
-            android:stepSize="1"
-            android:valueFrom="000"
-            android:valueTo="255"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toEndOf="@+id/green_text"
-            app:layout_constraintTop_toBottomOf="@+id/red_slider"
-            app:thumbColor="@color/green"
-            app:trackColor="@color/green" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/blue_slider"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
-            android:layout_marginTop="16dp"
-            android:stepSize="1"
-            android:valueFrom="000"
-            android:valueTo="255"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toEndOf="@+id/blue_text"
-            app:layout_constraintTop_toBottomOf="@+id/green_slider"
-            app:thumbColor="@color/blue"
-            app:trackColor="@color/blue" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/color_cardView"
-            android:layout_width="200dp"
-            android:layout_height="124dp"
-            android:layout_marginTop="16dp"
+            android:layout_margin="20dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/round_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/spacer">
 
-            <TextView
-                android:id="@+id/color_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#000000" />
+            <ImageButton
+                android:id="@+id/buttonCenterImage"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/buttonBg"
+                android:src="@drawable/center" />
 
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/blue_color"
-            style="@style/Widget.RGB_Seekbars.TextView"
+        <LinearLayout
+            android:id="@+id/buttonRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="000"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@+id/blue_slider"
+            android:layout_margin="20dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/round_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/blue_slider"
-            app:layout_constraintTop_toTopOf="@+id/blue_slider" />
-
-        <TextView
-            android:id="@+id/green_color"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="000"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@+id/green_slider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/green_slider"
-            app:layout_constraintTop_toTopOf="@+id/green_slider" />
-
-        <TextView
-            android:id="@+id/red_color"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="000"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@+id/red_slider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/red_slider"
-            app:layout_constraintTop_toTopOf="@+id/red_slider" />
-
-        <TextView
-            android:id="@+id/hex_code"
-            style="@style/Widget.RGB_Seekbars.TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="\#000000"
-            android:textSize="24sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.9"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/blue_slider" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@id/spacer">
+
+            <ImageButton
+                android:id="@+id/buttonRightImage"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/buttonBg"
+                android:src="@drawable/arrow_right" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textToApply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:text="Clicca un bottone"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/the_3_buttons" />
+
+    <TextView
+        android:id="@+id/textToApplyBt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textSize="15sp"
+        android:text="in attesa..."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textToApply" />
 
     <EditText
         android:id="@+id/text_to_bluetooth"
@@ -214,7 +169,7 @@
         android:hint="Inserire testo da mandare via bluetooth"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rgb_color_select" />
+        app:layout_constraintTop_toBottomOf="@id/textToApplyBt" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/send_text"

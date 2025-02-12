@@ -7,16 +7,14 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.LinearLayout
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,17 +28,15 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import org.toni.controllolego.databinding.ActivityMainBinding
-import java.util.Locale
 
 
-@SuppressLint("MissingPermission")
+@SuppressLint("ClickableViewAccessibility", "MissingPermission", "SetTextI18n")
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mService: BluetoothService
     private var writer: BluetoothWriter? = null
     private val BTAdapter = BluetoothAdapter.getDefaultAdapter()
 
-    @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -112,56 +108,55 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.redSlider.addOnChangeListener { _, value, _ ->
-            if (writer == null)
-                return@addOnChangeListener
-
-            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
-            writer!!.write('R')
-            writer!!.write(str)
-            binding.redColor.text = str
-            setRgbViewColor()
-        }
-        binding.greenSlider.addOnChangeListener { _, value, _ ->
-            if (writer == null)
-                return@addOnChangeListener
-
-            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
-            writer!!.write('G')
-            writer!!.write(str)
-            binding.greenColor.text = str
-            setRgbViewColor()
-        }
-        binding.blueSlider.addOnChangeListener { _, value, _ ->
-            if (writer == null)
-                return@addOnChangeListener
-
-            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
-            writer!!.write('B')
-            writer!!.write(str)
-            binding.blueColor.text = str
-            setRgbViewColor()
-        }
+        setBtButton(binding.buttonLeft, binding.buttonLeftImage,"Girando a sinistra di 90°", "p090")
+        setBtButton(binding.buttonCenter, binding.buttonCenterImage,"Ritornando a 0°", "P000")
+        setBtButton(binding.buttonRight, binding.buttonRightImage,"Girando a destra di 90°", "P090")
 
         binding.sendText.setOnClickListener {
-            if (writer == null) {
-                Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (binding.textToBluetooth.text.isNotEmpty()) {
-                writer!!.write(binding.textToBluetooth.text.toString())
-            }
+            if (binding.textToBluetooth.text.isNotEmpty())
+                writer?.write(binding.textToBluetooth.text.toString()) ?: showHCNotConnected()
         }
     }
 
-    private fun setRgbViewColor() {
-        val red = binding.redColor.text.toString().toInt()
-        val green = binding.greenColor.text.toString().toInt()
-        val blue = binding.blueColor.text.toString().toInt()
-        binding.apply {
-            colorView.setBackgroundColor(Color.rgb(red, green, blue))
-            hexCode.text = String.format("#%02X%02X%02X", red, green, blue)
+    private fun showHCNotConnected() {
+        Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun setBtButton(button: View, imageView: ImageView, textToApply: String, textToApplyBt: String) {
+        button.setOnTouchListener { view, event -> startAnimation(view, event); startAnimation(imageView, event) }
+        button.setOnClickListener {
+            binding.textToApply.text =  textToApply
+            binding.textToApplyBt.text = textToApplyBt
+            writer?.write(textToApplyBt) ?: showHCNotConnected()
         }
+        imageView.setOnTouchListener { _, event -> startAnimation(button, event); startAnimation(imageView, event) }
+        imageView.setOnClickListener {
+            binding.textToApply.text =  textToApply
+            binding.textToApplyBt.text = textToApplyBt
+            writer?.write(textToApplyBt) ?: showHCNotConnected()
+        }
+    }
+
+    private fun startAnimation(imageView: ImageView, event: MotionEvent): Boolean {
+        val colorAnimator = when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                ValueAnimator.ofObject(ArgbEvaluator(),
+                    getColor(R.color.buttonBg),
+                    getColor(R.color.reverseButtonBg))
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                ValueAnimator.ofObject(ArgbEvaluator(),
+                    getColor(R.color.reverseButtonBg),
+                    getColor(R.color.buttonBg))
+            }
+            else -> ValueAnimator()
+        }
+        colorAnimator.duration = 300
+        colorAnimator.addUpdateListener { animator ->
+            imageView.background.setTint(animator.animatedValue as Int)
+        }
+        colorAnimator.start()
+        return false
     }
 
     private fun startAnimation(view: View, event: MotionEvent, scaleAnimation: Boolean = false): Boolean {

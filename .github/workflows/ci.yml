@@ -2,9 +2,9 @@ name: Android App CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "lego_control" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "lego_control" ]
 
 jobs:
   build-android-app:
