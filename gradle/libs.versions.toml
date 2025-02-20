@@ -3,6 +3,7 @@ agp = "8.7.2"
 bluetoothclassiclibrary = "0.3.5"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
+colorpickerview = "2.3.0"
 appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.3"
@@ -17,6 +18,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 bluetoothclassiclibrary = { module = "com.github.douglasjunior.AndroidBluetoothLibrary:BluetoothClassicLibrary", version.ref = "bluetoothclassiclibrary" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+colorpickerview = { module = "com.github.skydoves:colorpickerview", version.ref = "colorpickerview" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
@@ -25,4 +27,3 @@ androidx-bluetooth = { group = "androidx.bluetooth", name = "bluetooth", version
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-

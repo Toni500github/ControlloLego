@@ -7,19 +7,27 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothClassicService
@@ -27,7 +35,10 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
+import com.google.android.material.slider.Slider
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import org.toni.controllolego.databinding.ActivityMainBinding
+import java.util.Locale
 
 
 @SuppressLint("ClickableViewAccessibility", "MissingPermission", "SetTextI18n")
@@ -78,8 +89,8 @@ class MainActivity : AppCompatActivity() {
                 for (device in pairedDevices) {
                     Log.d("BluetoothTestingLmao", "device name = ${device?.name}")
                     Log.d("BluetoothTestingLmao", "MAC address = ${device?.address}")
-                    if (device?.name.contentEquals("HC-05", true)) {
-                        binding.statusHc05.text = "Connettendomi al ${device?.name}..."
+                    if (device?.name?.contentEquals("HC-05") == true) {
+                        binding.statusHc05.text = "Connettendomi al ${device.name}..."
                         val uuids = device.uuids
                         if (uuids != null) {
                             val config = BluetoothConfiguration()
@@ -97,10 +108,10 @@ class MainActivity : AppCompatActivity() {
                             if (mService.status == BluetoothStatus.CONNECTED) {
                                 writer = BluetoothWriter(mService)
                                 binding.connectHc05.text = "DISCONNETTI"
-                                binding.statusHc05.text = "${device?.name} connesso con successo"
+                                binding.statusHc05.text = "${device.name} connesso con successo"
                                 alreadyConnected = true
                             } else {
-                                binding.statusHc05.text = "${device?.name} non è stato connesso"
+                                binding.statusHc05.text = "${device.name} non è stato connesso"
                             }
                         }
                     }
@@ -112,16 +123,57 @@ class MainActivity : AppCompatActivity() {
         setBtButton(binding.buttonCenter, binding.buttonCenterImage,"Ritornando a 0°", "P000")
         setBtButton(binding.buttonRight, binding.buttonRightImage,"Girando a destra di 90°", "P090")
 
+        setSliderBar(binding.redSlider, binding.redColor, 'R')
+        setSliderBar(binding.greenSlider, binding.greenColor, 'G')
+        setSliderBar(binding.blueSlider, binding.blueColor, 'B')
+
         binding.sendText.setOnClickListener {
             if (binding.textToBluetooth.text.isNotEmpty())
                 writer?.write(binding.textToBluetooth.text.toString()) ?: showHCNotConnected()
+        }
+
+        binding.radioSelectColorMode.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radio_rgb_colors -> {
+                    binding.customColorSelect.visibility = View.GONE
+                    binding.rgbColorSelect.visibility = View.VISIBLE
+                }
+                R.id.radio_hex_advanced_colors -> {
+                    binding.rgbColorSelect.visibility = View.GONE
+                    binding.customColorSelect.visibility = View.VISIBLE
+                    setColorPickerView()
+                }
+            }
         }
     }
 
     private fun showHCNotConnected() {
         Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
     }
-    
+
+    private fun setSliderBar(slider: Slider, textView: TextView, color: Char) {
+        slider.addOnChangeListener { _, value, _ ->
+            val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
+            textView.text = str
+            setRgbViewColor()
+
+            if (writer == null)
+                return@addOnChangeListener
+            writer?.write(color)
+            writer?.write(str)
+        }
+    }
+
+    private fun setRgbViewColor() {
+        val red = binding.redColor.text.toString().toInt()
+        val green = binding.greenColor.text.toString().toInt()
+        val blue = binding.blueColor.text.toString().toInt()
+        binding.apply {
+            colorView.setBackgroundColor(Color.rgb(red, green, blue))
+            hexCode.text = String.format("#%02X%02X%02X", red, green, blue)
+        }
+    }
+
     private fun setBtButton(button: View, imageView: ImageView, textToApply: String, textToApplyBt: String) {
         button.setOnTouchListener { view, event -> startAnimation(view, event); startAnimation(imageView, event) }
         button.setOnClickListener {
@@ -136,6 +188,47 @@ class MainActivity : AppCompatActivity() {
             writer?.write(textToApplyBt) ?: showHCNotConnected()
         }
     }
+
+    private fun setColorPickerView() {
+        // disable scroll when interacting with the color picker
+        binding.colorPickerView.setOnTouchListener { view, _ ->
+            // allow colorPickerView to handle the touch event
+            view.parent.requestDisallowInterceptTouchEvent(true)
+            false
+        }
+        binding.brightnessSlideBar.setOnTouchListener { view, _ ->
+            view.parent.requestDisallowInterceptTouchEvent(true)
+            false
+        }
+
+        binding.colorPickerHex.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {
+                val col = s.toString()
+                if (isValidHex(col))
+                    binding.colorPickerView.setInitialColor(col.toColorInt())
+            }
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+        } )
+
+        binding.colorPickerView.setColorListener(ColorEnvelopeListener { envelope, fromUser ->
+            if (!binding.colorPickerHex.text.contentEquals("#"+envelope.hexCode.substring(2)) && fromUser)
+                binding.colorPickerHex.setText("#"+envelope.hexCode.substring(2))
+
+            binding.customColorView.setBackgroundColor(envelope.color)
+
+            if (writer != null) {
+                writer?.write("R" + String.format(Locale.ENGLISH, "%03d", envelope.color.red))
+                writer?.write("G" + String.format(Locale.ENGLISH, "%03d", envelope.color.green))
+                writer?.write("B" + String.format(Locale.ENGLISH, "%03d", envelope.color.blue))
+            }
+        })
+
+        binding.colorPickerView.attachBrightnessSlider(binding.brightnessSlideBar)
+    }
+
+    private fun isValidHex(color: String): Boolean =
+        color.matches("^#[0-9A-Fa-f]{6}$".toRegex())
 
     private fun startAnimation(imageView: ImageView, event: MotionEvent): Boolean {
         val colorAnimator = when (event.action) {
