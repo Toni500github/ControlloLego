@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -20,6 +21,7 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +32,7 @@ import androidx.core.graphics.red
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothClassicService
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
@@ -37,6 +40,9 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import com.google.android.material.slider.Slider
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.toni.controllolego.databinding.ActivityMainBinding
 import java.util.Locale
 
@@ -130,6 +136,9 @@ class MainActivity : AppCompatActivity() {
         setSliderBar(binding.greenSlider, binding.greenColor, 'G')
         setSliderBar(binding.blueSlider, binding.blueColor, 'B')
 
+        setServoMotoreButton(binding.buttonLeft2, 'a', "Girando a sinistra", "a")
+        setServoMotoreButton(binding.buttonRight2, 'A', "Girando a destra", "A")
+
         binding.sendText.setOnClickListener {
             if (binding.textToBluetooth.text.isNotEmpty())
                 writer?.write(binding.textToBluetooth.text.toString()) ?: showHCNotConnected()
@@ -152,6 +161,40 @@ class MainActivity : AppCompatActivity() {
 
     private fun showHCNotConnected() {
         Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setServoMotoreButton(btButton: ToggleButton, char: Char, textToApply: String, textToApplyBt: String) {
+        return setServoMotoreButton(btButton, char.toString(), textToApply, textToApplyBt)
+    }
+
+    private fun setServoMotoreButton(btButton: ToggleButton, char: String, textToApply: String, textToApplyBt: String) {
+        val greenColorStateList: ColorStateList =
+            resources.getColorStateList(R.color.green, null)
+        val redColorStateList: ColorStateList =
+            resources.getColorStateList(R.color.red, null)
+
+        btButton.setOnCheckedChangeListener { button, isChecked ->
+            if (writer == null) {
+                showHCNotConnected()
+                return@setOnCheckedChangeListener
+            }
+            if (isChecked) {
+                button.backgroundTintList = greenColorStateList
+                binding.textToApply.text = textToApply
+                binding.textToApplyBt.text = textToApplyBt
+                lifecycleScope.launch {
+                    while (true) {
+                        writer?.write(char)
+                        delay(100L)
+                    }
+                }
+            } else {
+                button.backgroundTintList = redColorStateList
+                binding.textToApply.text = "Non sto $textToApply"
+                binding.textToApplyBt.text = ""
+                lifecycleScope.cancel()
+            }
+        }
     }
 
     private fun setSliderBar(slider: Slider, textView: TextView, color: Char) {
