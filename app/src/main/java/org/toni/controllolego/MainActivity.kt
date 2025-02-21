@@ -12,6 +12,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -40,6 +41,9 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import com.google.android.material.slider.Slider
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -111,16 +115,22 @@ class MainActivity : AppCompatActivity() {
                             BluetoothService.init(config)
                             mService = BluetoothService.getDefaultInstance()
                             mService.connect(device)
-                            while (mService.status == BluetoothStatus.CONNECTING) {  }
-                            if (mService.status == BluetoothStatus.CONNECTED) {
-                                writer = BluetoothWriter(mService)
-                                binding.connectHc05.text = "DISCONNETTI"
-                                binding.statusHc05.text = "${device.name} connesso con successo"
-                                binding.statusHc05.setTextColor(Color.GREEN)
-                                alreadyConnected = true
-                            } else {
-                                binding.statusHc05.text = "Non si è riusciti a connettere ${device.name}"
-                                binding.statusHc05.setTextColor(Color.RED)
+                            lifecycleScope.launch {
+                                // give it the time to at least set the statusHcO5 text
+                                Handler().postDelayed({
+                                    while (mService.status == BluetoothStatus.CONNECTING);
+                                    if (mService.status == BluetoothStatus.CONNECTED) {
+                                        writer = BluetoothWriter(mService)
+                                        binding.connectHc05.text = "DISCONNETTI"
+                                        binding.statusHc05.text = "${device.name} connesso con successo"
+                                        binding.statusHc05.setTextColor(Color.GREEN)
+                                        alreadyConnected = true
+                                    } else {
+                                        binding.statusHc05.text = "Non si è riusciti a connettere L'${device.name}"
+                                        binding.statusHc05.setTextColor(Color.RED)
+                                    }
+                                }, 50)
+                                cancel()
                             }
                         }
                     }
