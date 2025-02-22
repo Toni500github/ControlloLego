@@ -2,6 +2,7 @@ package org.toni.controllolego
 
 import android.Manifest
 import android.animation.ArgbEvaluator
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
@@ -19,10 +20,10 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.ToggleButton
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -57,6 +58,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mService: BluetoothService
     private var writer: BluetoothWriter? = null
     private val BTAdapter = BluetoothAdapter.getDefaultAdapter()
+
+    private var currentJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.IO)
+    private var rotationAnimator: ObjectAnimator? = null
+    private var rotatingButton: ImageButton? = null // Track the rotating button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,8 +152,56 @@ class MainActivity : AppCompatActivity() {
         setSliderBar(binding.greenSlider, binding.greenColor, 'G')
         setSliderBar(binding.blueSlider, binding.blueColor, 'B')
 
-        setServoMotoreButton(binding.buttonLeft2, 'a', "Girando a sinistra", "a")
-        setServoMotoreButton(binding.buttonRight2, 'A', "Girando a destra", "A")
+        val greenColorStateList: ColorStateList =
+            resources.getColorStateList(R.color.green, null)
+        val redColorStateList: ColorStateList =
+            resources.getColorStateList(R.color.red, null)
+        var isClickedLeft = false
+        var isClickedRight = false
+
+        binding.buttonLeft2.setOnClickListener { button ->
+            while (writer == null) {
+                showHCNotConnected()
+                return@setOnClickListener
+            }
+            isClickedLeft = !isClickedLeft
+            isClickedRight = false
+            if (isClickedLeft) {
+                binding.buttonRight2.backgroundTintList = redColorStateList
+                button.backgroundTintList = greenColorStateList
+                binding.textToApply.text = "Ruotando a sinistra"
+                binding.textToApplyBt.text = "a"
+                startJob("a", binding.buttonLeft2, true)
+            } else {
+                button.backgroundTintList = redColorStateList
+                binding.textToApply.text = ""
+                binding.textToApplyBt.text = ""
+                currentJob?.cancel()
+                stopRotationAnimation()
+            }
+        }
+
+        binding.buttonRight2.setOnClickListener { button ->
+            while (writer == null) {
+                showHCNotConnected()
+                return@setOnClickListener
+            }
+            isClickedRight = !isClickedRight
+            isClickedLeft = false
+            if (isClickedRight) {
+                binding.buttonLeft2.backgroundTintList = redColorStateList
+                button.backgroundTintList = greenColorStateList
+                binding.textToApply.text = "Ruotando a destra"
+                binding.textToApplyBt.text = "A"
+                startJob("A", binding.buttonRight2, false)
+            } else {
+                button.backgroundTintList = redColorStateList
+                binding.textToApply.text = ""
+                binding.textToApplyBt.text = ""
+                currentJob?.cancel()
+                stopRotationAnimation()
+            }
+        }
 
         binding.sendText.setOnClickListener {
             if (binding.textToBluetooth.text.isNotEmpty())
@@ -169,42 +223,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showHCNotConnected() {
-        Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
-    }
+    private fun startJob(taskName: String, button: ImageButton, isLeft: Boolean) {
+        currentJob?.cancel()
+        runOnUiThread { startRotationAnimation(button, isLeft) }
 
-    private fun setServoMotoreButton(btButton: ToggleButton, char: Char, textToApply: String, textToApplyBt: String) {
-        return setServoMotoreButton(btButton, char.toString(), textToApply, textToApplyBt)
-    }
-
-    private fun setServoMotoreButton(btButton: ToggleButton, char: String, textToApply: String, textToApplyBt: String) {
-        val greenColorStateList: ColorStateList =
-            resources.getColorStateList(R.color.green, null)
-        val redColorStateList: ColorStateList =
-            resources.getColorStateList(R.color.red, null)
-
-        btButton.setOnCheckedChangeListener { button, isChecked ->
-            if (writer == null) {
-                showHCNotConnected()
-                return@setOnCheckedChangeListener
-            }
-            if (isChecked) {
-                button.backgroundTintList = greenColorStateList
-                binding.textToApply.text = textToApply
-                binding.textToApplyBt.text = textToApplyBt
-                lifecycleScope.launch {
-                    while (true) {
-                        writer?.write(char)
-                        delay(100L)
-                    }
-                }
-            } else {
-                button.backgroundTintList = redColorStateList
-                binding.textToApply.text = "Non sto $textToApply"
-                binding.textToApplyBt.text = ""
-                lifecycleScope.cancel()
+        // Start a new job
+        currentJob = scope.launch {
+            while (true) {
+                writer?.write(taskName)
+                delay(300L)
             }
         }
+    }
+
+    private fun startRotationAnimation(button: ImageButton, isLeft: Boolean) {
+        stopRotationAnimation() // Stop any previous rotation
+        rotatingButton = button
+        rotationAnimator = ObjectAnimator.ofFloat(button, "rotation", if (isLeft) 0f else 360f, if (isLeft) -360f else 0f).apply {
+            duration = 1000
+            repeatCount = ObjectAnimator.INFINITE
+            start()
+        }
+    }
+
+    private fun stopRotationAnimation() {
+        rotationAnimator?.cancel()
+        rotatingButton?.rotation = 0f // Reset rotation to avoid weird angles
+        rotatingButton = null
+    }
+
+    private fun showHCNotConnected() {
+        Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
     }
 
     private fun setSliderBar(slider: Slider, textView: TextView, color: Char) {
@@ -374,4 +423,11 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MyTag", "${it.key} = ${it.value}")
             }
         }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        currentJob?.cancel() // Cancel the job when the activity is destroyed
+        scope.cancel() // Clean up coroutine scope
+        stopRotationAnimation()
+    }
 }
