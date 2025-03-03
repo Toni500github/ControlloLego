@@ -6,6 +6,8 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -13,7 +15,6 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -28,39 +29,33 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothClassicService
-import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
+import androidx.fragment.app.Fragment
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
-import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import com.google.android.material.slider.Slider
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.toni.controllolego.databinding.ActivityMainBinding
 import java.util.Locale
 
+data class BtStuff(var service: BluetoothService? = null,
+                   var writer: BluetoothWriter? = null,
+                   var pairedDevices: MutableSet<BluetoothDevice>? = null,
+                   var connected: Boolean = false,
+                   var bindingMainActivity: ActivityMainBinding? = null)
 
 @SuppressLint("ClickableViewAccessibility", "MissingPermission", "SetTextI18n")
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var mService: BluetoothService
-    private var writer: BluetoothWriter? = null
     private val BTAdapter = BluetoothAdapter.getDefaultAdapter()
+    private val btStuff = BtStuff()
 
-    private var currentJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.IO)
     private var rotationAnimator: ObjectAnimator? = null
     private var rotatingButton: ImageButton? = null // Track the rotating button
 
@@ -83,16 +78,17 @@ class MainActivity : AppCompatActivity() {
             requestBluetooth()
         }
 
-        var alreadyConnected = false
+        btStuff.pairedDevices = BTAdapter.bondedDevices
+        btStuff.bindingMainActivity = binding
         binding.connectHc05.setOnTouchListener { view, event -> startAnimation(view, event) }
         binding.connectHc05.setOnClickListener {
-            if (alreadyConnected) {
-                mService.disconnect()
-                writer = null
+            if (btStuff.connected) {
+                btStuff.service?.disconnect()
+                btStuff.writer = null
                 binding.connectHc05.text = "CONNETTI"
                 binding.statusHc05.text = "Dispositivo disconnesso"
                 binding.statusHc05.setTextColor(resources.getColor(R.color.subText, null))
-                alreadyConnected = false
+                btStuff.connected = false
                 return@setOnClickListener
             }
             if (BTAdapter == null) {
@@ -101,66 +97,26 @@ class MainActivity : AppCompatActivity() {
                 val enableBT = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableBT, 2)
             }
-            val pairedDevices = BTAdapter.bondedDevices
-            if (pairedDevices.size > 0) {
-                for (device in pairedDevices) {
-                    Log.d("BluetoothTestingLmao", "device name = ${device?.name}")
-                    Log.d("BluetoothTestingLmao", "MAC address = ${device?.address}")
-                    if (device?.name?.contentEquals("HC-05") == true) {
-                        binding.statusHc05.text = "Connettendomi al ${device.name}..."
-                        val uuids = device.uuids
-                        if (uuids != null) {
-                            val config = BluetoothConfiguration()
-                            config.bluetoothServiceClass = BluetoothClassicService::class.java //  BluetoothClassicService.class or BluetoothLeService.class
-                            config.context = applicationContext
-                            config.bufferSize = 2048
-                            config.characterDelimiter = '\n'
-                            config.deviceName = "Controllo Lego"
-                            config.callListenersInMainThread = true
-                            config.uuid = uuids[1].uuid
-                            BluetoothService.init(config)
-                            mService = BluetoothService.getDefaultInstance()
-                            mService.connect(device)
-                            lifecycleScope.launch {
-                                // give it the time to at least set the statusHcO5 text
-                                Handler().postDelayed({
-                                    while (mService.status == BluetoothStatus.CONNECTING);
-                                    if (mService.status == BluetoothStatus.CONNECTED) {
-                                        writer = BluetoothWriter(mService)
-                                        binding.connectHc05.text = "DISCONNETTI"
-                                        binding.statusHc05.text = "${device.name} connesso con successo"
-                                        binding.statusHc05.setTextColor(Color.GREEN)
-                                        alreadyConnected = true
-                                    } else {
-                                        binding.statusHc05.text = "Non si è riusciti a connettere L'${device.name}"
-                                        binding.statusHc05.setTextColor(Color.RED)
-                                    }
-                                }, 50)
-                                cancel()
-                            }
-                        }
-                    }
-                }
-            }
+
+            val btFragment = BtPairedDevices(btStuff)
+            setFragment(btFragment)
         }
 
-        setBtButton(binding.buttonLeft, binding.buttonLeftImage,"Girando a sinistra di 90°", "p090")
-        setBtButton(binding.buttonCenter, binding.buttonCenterImage,"Ritornando a 0°", "P000")
-        setBtButton(binding.buttonRight, binding.buttonRightImage,"Girando a destra di 90°", "P090")
+        setBtButton(binding.buttonLeft, binding.buttonLeftImage,"Girando a sinistra di 90°", "S")
+        setBtButton(binding.buttonCenter, binding.buttonCenterImage,"Ritornando a 0°", "C")
+        setBtButton(binding.buttonRight, binding.buttonRightImage,"Girando a destra di 90°", "D")
 
-        setSliderBar(binding.redSlider, binding.redColor, 'R')
-        setSliderBar(binding.greenSlider, binding.greenColor, 'G')
-        setSliderBar(binding.blueSlider, binding.blueColor, 'B')
+        setSliderBar(binding.redSlider, binding.redColor, "R")
+        setSliderBar(binding.greenSlider, binding.greenColor, "G")
+        setSliderBar(binding.blueSlider, binding.blueColor, "B")
 
-        val greenColorStateList: ColorStateList =
-            resources.getColorStateList(R.color.green, null)
-        val redColorStateList: ColorStateList =
-            resources.getColorStateList(R.color.red, null)
+        val greenColorStateList = resources.getColorStateList(R.color.green, null)
+        val redColorStateList = resources.getColorStateList(R.color.red, null)
         var isClickedLeft = false
         var isClickedRight = false
 
         binding.buttonLeft2.setOnClickListener { button ->
-            while (writer == null) {
+            while (btStuff.writer == null) {
                 showHCNotConnected()
                 return@setOnClickListener
             }
@@ -170,19 +126,19 @@ class MainActivity : AppCompatActivity() {
                 binding.buttonRight2.backgroundTintList = redColorStateList
                 button.backgroundTintList = greenColorStateList
                 binding.textToApply.text = "Ruotando a sinistra"
-                binding.textToApplyBt.text = "a"
-                startJob("a", binding.buttonLeft2, true)
+                binding.textToApplyBt.text = "I"
+                runOnUiThread { startRotationAnimation(binding.buttonLeft2, true) }
             } else {
                 button.backgroundTintList = redColorStateList
-                binding.textToApply.text = ""
-                binding.textToApplyBt.text = ""
-                currentJob?.cancel()
+                binding.textToApply.text = "Fermo"
+                binding.textToApplyBt.text = "F"
                 stopRotationAnimation()
             }
+            btStuff.writer?.write(binding.textToApplyBt.text.toString())
         }
 
         binding.buttonRight2.setOnClickListener { button ->
-            while (writer == null) {
+            while (btStuff.writer == null) {
                 showHCNotConnected()
                 return@setOnClickListener
             }
@@ -193,19 +149,19 @@ class MainActivity : AppCompatActivity() {
                 button.backgroundTintList = greenColorStateList
                 binding.textToApply.text = "Ruotando a destra"
                 binding.textToApplyBt.text = "A"
-                startJob("A", binding.buttonRight2, false)
+                runOnUiThread { startRotationAnimation(binding.buttonRight2, false) }
             } else {
                 button.backgroundTintList = redColorStateList
-                binding.textToApply.text = ""
-                binding.textToApplyBt.text = ""
-                currentJob?.cancel()
+                binding.textToApply.text = "Fermo"
+                binding.textToApplyBt.text = "F"
                 stopRotationAnimation()
             }
+            btStuff.writer?.write(binding.textToApplyBt.text.toString())
         }
 
         binding.sendText.setOnClickListener {
             if (binding.textToBluetooth.text.isNotEmpty())
-                writer?.write(binding.textToBluetooth.text.toString()) ?: showHCNotConnected()
+                btStuff.writer?.write(binding.textToBluetooth.text.toString()) ?: showHCNotConnected()
         }
 
         binding.radioSelectColorMode.setOnCheckedChangeListener { _, checkedId ->
@@ -223,23 +179,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startJob(taskName: String, button: ImageButton, isLeft: Boolean) {
-        currentJob?.cancel()
-        runOnUiThread { startRotationAnimation(button, isLeft) }
-
-        // Start a new job
-        currentJob = scope.launch {
-            while (true) {
-                writer?.write(taskName)
-                delay(300L)
-            }
-        }
-    }
-
     private fun startRotationAnimation(button: ImageButton, isLeft: Boolean) {
         stopRotationAnimation() // Stop any previous rotation
         rotatingButton = button
-        rotationAnimator = ObjectAnimator.ofFloat(button, "rotation", if (isLeft) 0f else 360f, if (isLeft) -360f else 0f).apply {
+        rotationAnimator = ObjectAnimator.ofFloat(
+            button,
+            "rotation",
+            if (isLeft) 0f else 360f,
+            if (isLeft) -360f else 0f
+        ).apply {
             duration = 1000
             repeatCount = ObjectAnimator.INFINITE
             start()
@@ -256,17 +204,29 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Connettersi al dispositivo HC-05 prima", Toast.LENGTH_SHORT).show()
     }
 
-    private fun setSliderBar(slider: Slider, textView: TextView, color: Char) {
+    private fun setSliderBar(slider: Slider, textView: TextView, color: String) {
         slider.addOnChangeListener { _, value, _ ->
             val str = String.format(Locale.ENGLISH, "%03d", value.toInt())
             textView.text = str
             setRgbViewColor()
 
-            if (writer == null)
+            if (btStuff.writer == null)
                 return@addOnChangeListener
-            writer?.write(color)
-            writer?.write(str)
+            btStuff.writer?.write(color)
+            btStuff.writer?.write(str)
         }
+    }
+
+    private fun setFragment(fragment: Fragment, slideInAnim: Int = R.anim.slide_in) {
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                slideInAnim,  // enter
+                android.R.animator.fade_out,  // exit
+                android.R.animator.fade_in,   // popEnter
+                R.anim.slide_out  // popExit
+            )
+            .replace(android.R.id.content, fragment)
+            .addToBackStack(null).commit()
     }
 
     private fun setRgbViewColor() {
@@ -284,13 +244,13 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener {
             binding.textToApply.text =  textToApply
             binding.textToApplyBt.text = textToApplyBt
-            writer?.write(textToApplyBt) ?: showHCNotConnected()
+            btStuff.writer?.write(textToApplyBt) ?: showHCNotConnected()
         }
         imageView.setOnTouchListener { _, event -> startAnimation(button, event); startAnimation(imageView, event) }
         imageView.setOnClickListener {
             binding.textToApply.text =  textToApply
             binding.textToApplyBt.text = textToApplyBt
-            writer?.write(textToApplyBt) ?: showHCNotConnected()
+            btStuff.writer?.write(textToApplyBt) ?: showHCNotConnected()
         }
     }
 
@@ -322,10 +282,10 @@ class MainActivity : AppCompatActivity() {
 
             binding.customColorView.setBackgroundColor(envelope.color)
 
-            if (writer != null) {
-                writer?.write("R" + String.format(Locale.ENGLISH, "%03d", envelope.color.red))
-                writer?.write("G" + String.format(Locale.ENGLISH, "%03d", envelope.color.green))
-                writer?.write("B" + String.format(Locale.ENGLISH, "%03d", envelope.color.blue))
+            if (btStuff.writer != null) {
+                btStuff.writer?.write("R" + String.format(Locale.ENGLISH, "%03d", envelope.color.red))
+                btStuff.writer?.write("G" + String.format(Locale.ENGLISH, "%03d", envelope.color.green))
+                btStuff.writer?.write("B" + String.format(Locale.ENGLISH, "%03d", envelope.color.blue))
             }
         })
 
@@ -334,6 +294,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun isValidHex(color: String): Boolean =
         color.matches("^#[0-9A-Fa-f]{6}$".toRegex())
+
+    private fun startAnimation(view: View, event: MotionEvent, scaleAnimation: Boolean = false): Boolean =
+        startAnimation(this, view, event, scaleAnimation)
 
     private fun startAnimation(imageView: ImageView, event: MotionEvent): Boolean {
         val colorAnimator = when (event.action) {
@@ -352,41 +315,6 @@ class MainActivity : AppCompatActivity() {
         colorAnimator.duration = 300
         colorAnimator.addUpdateListener { animator ->
             imageView.background.setTint(animator.animatedValue as Int)
-        }
-        colorAnimator.start()
-        return false
-    }
-
-    private fun startAnimation(view: View, event: MotionEvent, scaleAnimation: Boolean = false): Boolean {
-        if (scaleAnimation) {
-            val animRes = when (event.action) {
-                MotionEvent.ACTION_DOWN -> R.anim.scale_down
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> R.anim.scale_up
-                else -> return false
-            }
-
-            val animation = AnimationUtils.loadAnimation(this, animRes)
-            view.startAnimation(animation)
-            return false
-        }
-
-        val drawable = view.background as GradientDrawable
-        val colorAnimator = when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                ValueAnimator.ofObject(ArgbEvaluator(),
-                    getColor(R.color.buttonBg),
-                    getColor(R.color.reverseButtonBg))
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                ValueAnimator.ofObject(ArgbEvaluator(),
-                    getColor(R.color.reverseButtonBg),
-                    getColor(R.color.buttonBg))
-            }
-            else -> ValueAnimator()
-        }
-        colorAnimator.duration = 300
-        colorAnimator.addUpdateListener { animator ->
-            drawable.setColor(animator.animatedValue as Int)
         }
         colorAnimator.start()
         return false
@@ -426,8 +354,41 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        currentJob?.cancel() // Cancel the job when the activity is destroyed
-        scope.cancel() // Clean up coroutine scope
         stopRotationAnimation()
     }
+}
+
+internal fun startAnimation(context: Context, view: View, event: MotionEvent, scaleAnimation: Boolean = false): Boolean {
+    if (scaleAnimation) {
+        val animRes = when (event.action) {
+            MotionEvent.ACTION_DOWN -> R.anim.scale_down
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> R.anim.scale_up
+            else -> return false
+        }
+
+        val animation = AnimationUtils.loadAnimation(context, animRes)
+        view.startAnimation(animation)
+        return false
+    }
+
+    val drawable = view.background as GradientDrawable
+    val colorAnimator = when (event.action) {
+        MotionEvent.ACTION_DOWN -> {
+            ValueAnimator.ofObject(ArgbEvaluator(),
+                ContextCompat.getColor(context, R.color.buttonBg),
+                ContextCompat.getColor(context, R.color.reverseButtonBg))
+        }
+        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+            ValueAnimator.ofObject(ArgbEvaluator(),
+                ContextCompat.getColor(context, R.color.reverseButtonBg),
+                ContextCompat.getColor(context, R.color.buttonBg))
+        }
+        else -> ValueAnimator()
+    }
+    colorAnimator.duration = 300
+    colorAnimator.addUpdateListener { animator ->
+        drawable.setColor(animator.animatedValue as Int)
+    }
+    colorAnimator.start()
+    return false
 }
