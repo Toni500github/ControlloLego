@@ -98,7 +98,7 @@ class BtPairedDevices(val btStuff: BtStuff) : Fragment() {
 
     @SuppressLint("SetTextI18n")
     fun setClickBtDevice(binding: ActivityMainBinding?, context: Context?, device: BluetoothDevice?) {
-        if (device!!.name?.contains("HC*".toRegex()) == true) {
+        if (true) {
             binding!!.statusHc05.text = "Connettendomi al ${device.name}..."
             binding.statusHc05.setTextColor(0xFF8F9099.toInt())
             val uuids = device.uuids
