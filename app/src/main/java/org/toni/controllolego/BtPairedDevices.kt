@@ -48,8 +48,9 @@ import org.toni.controllolego.databinding.ActivityMainBinding
 import org.toni.controllolego.databinding.BtPairedDevicesBinding
 import org.toni.controllolego.databinding.BtPairedDevicesListLayoutBinding
 
+
 @SuppressLint("MissingPermission")
-class BtPairedDevices(val btStuff: BtStuff) : Fragment() {
+class BtPairedDevices(private val btStuff: BtStuff) : Fragment() {
 
     private var _binding: BtPairedDevicesBinding? = null
     // This property is only valid between onCreateView and
@@ -72,9 +73,14 @@ class BtPairedDevices(val btStuff: BtStuff) : Fragment() {
         if (btStuff.pairedDevices.isNullOrEmpty())
             return binding.root
 
+
         for (device in btStuff.pairedDevices!!) {
             Log.d("BluetoothTestingLmao", "device name = ${device.name}")
             Log.d("BluetoothTestingLmao", "MAC address = ${device.address}")
+            device.uuids.iterator().forEach { uuid ->
+                if (!uuid.uuid.toString().contentEquals("00000000-0000-0000-0000-000000000000"))
+                    Log.d("BluetoothTestingLmao", "UUIDs = ${uuid.uuid}")
+            }
             val deviceButtonLayout = BtPairedDevicesListLayoutBinding.inflate(inflater, container, false)
 
             deviceButtonLayout.deviceNameView.text = device.name
@@ -98,44 +104,41 @@ class BtPairedDevices(val btStuff: BtStuff) : Fragment() {
 
     @SuppressLint("SetTextI18n")
     fun setClickBtDevice(binding: ActivityMainBinding?, context: Context?, device: BluetoothDevice?) {
-        if (true) {
-            binding!!.statusHc05.text = "Connettendomi al ${device.name}..."
-            binding.statusHc05.setTextColor(0xFF8F9099.toInt())
-            val uuids = device.uuids
-            if (uuids != null) {
-                val config = BluetoothConfiguration()
-                config.bluetoothServiceClass = BluetoothClassicService::class.java //  BluetoothClassicService.class or BluetoothLeService.class
-                config.context = context
-                config.bufferSize = 2048
-                config.characterDelimiter = '\n'
-                config.deviceName = "Controllo Lego"
-                config.callListenersInMainThread = true
-                config.uuid = uuids[1].uuid
-                BluetoothService.init(config)
-                btStuff.service = BluetoothService.getDefaultInstance()
-                btStuff.service!!.connect(device)
-                lifecycleScope.launch {
-                    // give it the time to at least set the statusHcO5 text
-                    Handler().postDelayed({
-                        while (btStuff.service?.status == BluetoothStatus.CONNECTING) {}
-                        if (btStuff.service?.status == BluetoothStatus.CONNECTED) {
-                            btStuff.writer = BluetoothWriter(btStuff.service)
-                            binding.connectHc05.text = "DISCONNETTI"
-                            binding.statusHc05.text = "${device.name} connesso con successo"
-                            binding.statusHc05.setTextColor(Color.GREEN)
-                            btStuff.connected = true
-                        } else {
-                            binding.statusHc05.text = "Non si è riusciti a connettere L'${device.name}"
-                            binding.statusHc05.setTextColor(Color.RED)
-                            btStuff.connected = false
-                        }
-                    }, 500)
-                    cancel()
-                }
+        binding!!.statusHc05.setTextColor(0xFF8F9099.toInt())
+        binding.statusHc05.text = "Connettendomi al ${device!!.name}..."
+        val uuids = device.uuids
+        if (uuids != null) {
+            val config = BluetoothConfiguration()
+            config.bluetoothServiceClass = BluetoothClassicService::class.java //  BluetoothClassicService.class or BluetoothLeService.class
+            config.context = context
+            config.bufferSize = 2048
+            config.characterDelimiter = '\n'
+            config.deviceName = "Controllo Lego"
+            config.callListenersInMainThread = true
+            config.uuid = uuids[1].uuid
+            BluetoothService.init(config)
+            btStuff.service = BluetoothService.getDefaultInstance()
+            btStuff.service!!.connect(device)
+            lifecycleScope.launch {
+                // give it the time to at least set the statusHcO5 text
+                Handler().postDelayed({
+                    while (btStuff.service?.status == BluetoothStatus.CONNECTING) {}
+                    if (btStuff.service?.status == BluetoothStatus.CONNECTED) {
+                        btStuff.writer = BluetoothWriter(btStuff.service)
+                        binding.connectHc05.text = "DISCONNETTI"
+                        binding.statusHc05.text = "${device.name} connesso con successo"
+                        binding.statusHc05.setTextColor(Color.GREEN)
+                        btStuff.connected = true
+                    } else {
+                        binding.statusHc05.text = "Non si è riusciti a connettere \"${device.name}\""
+                        binding.statusHc05.setTextColor(Color.RED)
+                        btStuff.connected = false
+                    }
+                }, 500)
+                cancel()
             }
-        } else {
-            binding?.statusHc05?.text = "Dispositivo '${device.name}' non sembra essere un simile HC"
         }
+
     }
 
     override fun onDestroyView() {

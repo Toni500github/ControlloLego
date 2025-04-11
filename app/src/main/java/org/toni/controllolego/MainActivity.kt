@@ -10,7 +10,6 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -20,6 +19,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.animation.AnimationUtils
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -96,6 +96,8 @@ class MainActivity : AppCompatActivity() {
             } else if (!BTAdapter.isEnabled) {
                 val enableBT = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableBT, 2)
+            } else {
+                btStuff.pairedDevices = BTAdapter.bondedDevices
             }
 
             val btFragment = BtPairedDevices(btStuff)
@@ -116,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         var isClickedRight = false
 
         binding.buttonLeft2.setOnClickListener { button ->
-            while (btStuff.writer == null) {
+            if (btStuff.writer != null) {
                 showHCNotConnected()
                 return@setOnClickListener
             }
@@ -138,7 +140,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.buttonRight2.setOnClickListener { button ->
-            while (btStuff.writer == null) {
+            if (btStuff.writer != null) {
                 showHCNotConnected()
                 return@setOnClickListener
             }
@@ -157,6 +159,11 @@ class MainActivity : AppCompatActivity() {
                 stopRotationAnimation()
             }
             btStuff.writer?.write(binding.textToApplyBt.text.toString())
+        }
+
+        binding.textToBluetooth.setOnTouchListener { view, _ ->
+            view.parent.requestDisallowInterceptTouchEvent(true)
+            false
         }
 
         binding.sendText.setOnClickListener {
@@ -299,6 +306,10 @@ class MainActivity : AppCompatActivity() {
         startAnimation(this, view, event, scaleAnimation)
 
     private fun startAnimation(imageView: ImageView, event: MotionEvent): Boolean {
+        // Return early for unhandled motion events
+        if (event.action != MotionEvent.ACTION_DOWN && event.action != MotionEvent.ACTION_UP && event.action != MotionEvent.ACTION_CANCEL)
+            return false
+
         val colorAnimator = when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 ValueAnimator.ofObject(ArgbEvaluator(),
@@ -310,7 +321,7 @@ class MainActivity : AppCompatActivity() {
                     getColor(R.color.reverseButtonBg),
                     getColor(R.color.buttonBg))
             }
-            else -> ValueAnimator()
+            else -> return false
         }
         colorAnimator.duration = 300
         colorAnimator.addUpdateListener { animator ->
@@ -370,6 +381,9 @@ internal fun startAnimation(context: Context, view: View, event: MotionEvent, sc
         view.startAnimation(animation)
         return false
     }
+    // Return early for unhandled motion events
+    if (event.action != MotionEvent.ACTION_DOWN && event.action != MotionEvent.ACTION_UP && event.action != MotionEvent.ACTION_CANCEL)
+        return false
 
     val drawable = view.background as GradientDrawable
     val colorAnimator = when (event.action) {
@@ -383,7 +397,7 @@ internal fun startAnimation(context: Context, view: View, event: MotionEvent, sc
                 ContextCompat.getColor(context, R.color.reverseButtonBg),
                 ContextCompat.getColor(context, R.color.buttonBg))
         }
-        else -> ValueAnimator()
+        else -> return false
     }
     colorAnimator.duration = 300
     colorAnimator.addUpdateListener { animator ->
